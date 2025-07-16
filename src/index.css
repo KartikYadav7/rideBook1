@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+ /* #1a73e8 */
+ /* links hover rgba(255, 255, 255, 0.2); */
+
+ :root {
+  --color-primary: #1a73e8;
+  --color-primary-dark: #135db2;
+}
+.text-primary{
+   color:var(--color-primary);
+}
+.bg-primary {
+  background-color: var(--color-primary);
+}
+.hover\:bg-primary-dark:hover {
+    background-color: var(--color-primary-dark);
+}
+.heading{
+  @apply text-4xl mb-8 text-black font-semibold;
+}
