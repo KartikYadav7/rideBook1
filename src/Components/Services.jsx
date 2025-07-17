@@ -36,7 +36,7 @@ const Services = () => {
     text= "Reserve"
     description="Reserve a ride for your special events or appointments."
     icon={<BsCalendar2CheckFill />}
-    form="reserve" />
+    form="reservation" />
 
   </div>
 </section>

@@ -2,6 +2,7 @@ import Button from "./Button";
 import { IoIosArrowUp } from "react-icons/io";
 import { IoIosArrowDown } from "react-icons/io";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 function FAQItem({ question, answer }) {
   const [show, setShow] = useState(false);
 
@@ -68,7 +69,9 @@ export default function FAQSection() {
       <p className="my-2">
         If you need further assistance, please reach out to us directly.
       </p>
-      <Button text="Contact Support" className={`mt-2`} />
+      <Link to="/contact" className="mt-2">
+        <Button text="Contact Support" className={`mt-2`} />
+      </Link>
     </section>
   );
 }

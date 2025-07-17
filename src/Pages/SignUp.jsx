@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import Button from "../Components/Button";
 import { Link } from "react-router-dom";
-import PasswordInput from "../Components/PasswordInput";
+import {PasswordInput, InputField} from "../Components/InputFields";
 
 const SignUp = () => {
   const {
@@ -58,6 +58,11 @@ const SignUp = () => {
               name="email"
               placeholder="Enter your email"
               {...register("email")}
+    //           validation={{
+    // pattern: {
+    //   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    //   message: "Invalid email address"
+    // }
             />
             <p className="text-xs text-red-500 min-h-2.5">
               {errors?.email?.message}
@@ -74,10 +79,14 @@ const SignUp = () => {
             error={errors?.password}
             validation={{
             required: "Password is required",
-            minLength: {
-                value: 6,
-                message: "Password must be at least 6 characters",
-              },
+            validate: {
+    minLength: (v) => v.length >= 6 || "Password must be at least 6 characters",
+    maxLength: (v) => v.length <= 20 || "Password must be at most 20 characters",
+    hasUpperCase: (v) => /[A-Z]/.test(v) || "Must include an uppercase letter",
+    hasLowerCase: (v) => /[a-z]/.test(v) || "Must include a lowercase letter",
+    hasNumber: (v) => /\d/.test(v) || "Must include a number",
+    hasSpecialChar: (v) => /[@$!%*?&]/.test(v) || "Must include a special character (@$!%*?&)",
+  }
             }}
           />
           </div>

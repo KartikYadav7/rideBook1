@@ -6,7 +6,7 @@ import SignUp from './Pages/SignUp'
 import { ResetPasswordModal, ResetPasswordPage } from './Pages/ResetPassword'
 import Error from './Pages/Error'
 import BookingForm from './Pages/BookingForm'
-
+import ContactForm from './Pages/ContactForm'
 const App = () => {
   return (
     <>
@@ -18,6 +18,7 @@ const App = () => {
            <Route path="/resetPassword" element={<ResetPasswordModal />} />
             <Route path="/resetPasswordPage" element={<ResetPasswordPage />} />
           <Route path="/bookingForm" element={<BookingForm />} />
+          <Route path="/contact" element={<ContactForm />} />
           <Route path = "*" element={<Error/>}/>
         </Routes>
       </Router>
