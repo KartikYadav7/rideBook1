@@ -10,13 +10,13 @@ const LoginUser = () => {
         <p className="text-[#333] text-lg mb-8">Sign in to start earning money by providing rides and services.</p>
         <form className="max-w-md mx-auto">
           <div className="mb-6 text-left">
-            <label className="block mb-2 text-[#666]">Email</label>
+            <label className="block mb-2 text-primary font-medium">Email</label>
             <input type="email"
               placeholder='Enter your email'
               className="w-full p-3 border-none outline-none rounded text-[#333] bg-white" />
           </div>
           <div className="mb-8 text-left">
-            <label className="block mb-2 text-[#666]">Password</label>
+            <label className="block mb-2 text-primary font-medium">Password</label>
             <input type="password"
               placeholder='Enter your password'
               className="w-full p-3 border-none outline-none rounded text-[#333] bg-white" />

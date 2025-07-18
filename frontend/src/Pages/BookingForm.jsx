@@ -27,11 +27,13 @@ const BookingForm = () => {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 py-8 px-2">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl p-6 sm:p-10 space-y-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-10 ">
+
         <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6 text-center">
           {titleMap[formType]}
         </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-1">
           
 
           {formType === "package" && (
@@ -111,7 +113,7 @@ const BookingForm = () => {
           required
               />
              
-              {formType === "reserve" && (
+              {formType === "reservation" && (
                 <>
                   <InputField
                     label="Date"
@@ -152,6 +154,7 @@ const BookingForm = () => {
           </p>
         )} */}
         </form>
+
       </div>
     </section>
   );

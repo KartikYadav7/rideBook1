@@ -7,6 +7,7 @@ import { ResetPasswordModal, ResetPasswordPage } from './Pages/ResetPassword'
 import Error from './Pages/Error'
 import BookingForm from './Pages/BookingForm'
 import ContactForm from './Pages/ContactForm'
+import EmailVerification from './Pages/EmailVerification'
 const App = () => {
   return (
     <>
@@ -16,6 +17,7 @@ const App = () => {
           <Route path='/login' element={<Login />} />
           <Route path="signUp" element={<SignUp />} />
            <Route path="/resetPassword" element={<ResetPasswordModal />} />
+            <Route path="/verification" element={<EmailVerification />} />
             <Route path="/resetPasswordPage" element={<ResetPasswordPage />} />
           <Route path="/bookingForm" element={<BookingForm />} />
           <Route path="/contact" element={<ContactForm />} />

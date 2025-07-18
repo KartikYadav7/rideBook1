@@ -4,6 +4,7 @@ import { FaRegEye,FaRegEyeSlash } from "react-icons/fa";
 const PasswordInput = ({
   label,
   name,
+  className,
   placeholder,
   register,
   error,
@@ -23,8 +24,11 @@ const PasswordInput = ({
       required={required}
         type={showPassword ? "text" : "password"}
         placeholder={placeholder}
-        className="bg-blue-50 w-full border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-        {...register(name, validation)}
+        className={`bg-blue-50 w-full border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
+        {...register(name, {
+          required: required && `${label} is required`,
+          ...validation,
+        })}
         {...rest}
       />
       <div className="absolute right-6 top-[40px] text-gray-600 cursor-pointer">
@@ -48,7 +52,9 @@ const InputField = ({
   register,
   error,
   required,
+  className ,
   validation,
+  options=[],
   ...rest
 }) => (
   <div className="space-y-1">
@@ -56,18 +62,31 @@ const InputField = ({
     {type === "textarea" ? (
       <textarea
       placeholder={`Write something`}
-        className="w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] resize-y text-base "
+        className={`w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] resize-y text-base`}
         {...register(name, {
           required: required && `${label} is required`,
           ...validation,
         })}
         {...rest}
       />
-    ) : (
+    ) :  type === "select" ? (
+        <select
+          {...register(name,  {required: required && `${label} is required`,
+            ...validation})}
+          {...rest}
+         className="w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary "
+        >
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value} className="text-primary">
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      ) : (
       <input
         type={type}
         placeholder={`Enter ${label} `}
-        className="w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary"
+        className={`w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary  ${className}`}
         {...register(name, {
           required: required && `${label} is required`,
           ...validation,

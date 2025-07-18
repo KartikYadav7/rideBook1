@@ -1,9 +1,19 @@
-import React,{useState} from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link} from 'react-router-dom'
 import { FaBars, FaTimes } from 'react-icons/fa'
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutUser } from '../Redux/userSlice';
 
 const Navbar = () => {
   const [toggle, setToggle] = useState(false)
+  const user = useSelector((state) => state.user.user);
+  const dispatch = useDispatch();
+ 
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+  };
+
   return (
     <nav className='top-0 left-0 w-full z-50 bg-primary shadow-md'>
       <div className='flex items-center justify-between px-4 md:px-8 py-3 max-w-7xl mx-auto'>
@@ -15,8 +25,17 @@ const Navbar = () => {
           <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition'>Home</Link></li>
           <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition'>My Rides</Link></li>
           <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition'>Help</Link></li>
-          <li><Link to ="/login" className='text-white hover:bg-white/30 px-3 py-2 border rounded transition'>Login</Link></li>
-          <li><Link to ="/signup" className='text-primary bg-amber-300 px-3 py-2 border rounded font-semibold hover:bg-amber-200 transition'>SignUp</Link></li>
+          {user ? (
+            <>
+              <li className='text-white px-3 py-2 rounded transition'>Hi, {user.userName|| 'User'}</li>
+              <li><button onClick={handleLogout} className='text-white hover:bg-white/30 px-3 py-2 border rounded transition'>Logout</button></li>
+            </>
+          ) : (
+            <>
+              <li><Link to ="/login" className='text-white hover:bg-white/30 px-3 py-2 border rounded transition'>Login</Link></li>
+              <li><Link to ="/signup" className='text-primary bg-amber-300 px-3 py-2 border rounded font-semibold hover:bg-amber-200 transition'>SignUp</Link></li>
+            </>
+          )}
         </ul>
         <div className='md:hidden text-2xl text-white cursor-pointer' onClick={() => setToggle(!toggle)}>
           {toggle ? <FaTimes /> : <FaBars />}
@@ -30,8 +49,17 @@ const Navbar = () => {
         <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition' onClick={() => setToggle(false)}>Home</Link></li>
         <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition' onClick={() => setToggle(false)}>My Rides</Link></li>
         <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition' onClick={() => setToggle(false)}>Help</Link></li>
-        <li><Link to ="/login" className='text-white hover:bg-white/30 px-3 py-2 border rounded transition' onClick={() => setToggle(false)}>Login</Link></li>
-        <li><Link to ="/signup" className='text-primary bg-amber-300 px-3 py-2 border rounded font-semibold hover:bg-amber-200 transition' onClick={() => setToggle(false)}>SignUp</Link></li>
+        {user ? (
+          <>
+            <li className='text-white px-3 py-2 rounded transition'>Hi, {user.email || 'User'}</li>
+            <li><button onClick={() => { setToggle(false); handleLogout(); }} className='text-white hover:bg-white/30 px-3 py-2 border rounded transition'>Logout</button></li>
+          </>
+        ) : (
+          <>
+            <li><Link to ="/login" className='text-white hover:bg-white/30 px-3 py-2 border rounded transition' onClick={() => setToggle(false)}>Login</Link></li>
+            <li><Link to ="/signup" className='text-primary bg-amber-300 px-3 py-2 border rounded font-semibold hover:bg-amber-200 transition' onClick={() => setToggle(false)}>SignUp</Link></li>
+          </>
+        )}
       </ul>
     </nav>
   )
