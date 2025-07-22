@@ -1,28 +1,109 @@
-import React from "react";
+import { useState,} from "react";
+import { loadStripe } from "@stripe/stripe-js";
 import { useForm } from "react-hook-form";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../Components/Button";
-import {InputField} from '../Components/InputFields'
+import {InputField, PlaceAutocompleteInput} from '../Components/InputFields'
+import axios from "axios";
+import { useSelector } from "react-redux";
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const BookingForm = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const formType = location?.state?.formType || "";
+  const { user } = useSelector((state) => state.user);
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting,isSubmitSuccessful },
+    formState: { errors, isSubmitting},
+    watch,
+    setValue,
   } = useForm();
-
-  const onSubmit = (data) => {
-    console.log(`${formType} Data:`, data);
-    reset();
-  };
 
   const titleMap = {
     package: "Send Package",
     ride: "Book Now",
     reservation: "Reserve Ride",
+  };
+
+  const [priceInfo, setPriceInfo] = useState(null);
+  const [loadingPrice, setLoadingPrice] = useState(false);
+  const [priceError, setPriceError] = useState("");
+  
+  // Use React Hook Form's watch to observe field values
+  const pickup = watch("pickupLocation");
+  const drop = watch("dropLocation");
+  const weight = watch("weight");
+  const people = watch("people");
+
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [dropLocation, setDropLocation] = useState("");
+
+  // Helper to check if all required fields are filled
+  const isReady = () => {
+    if (formType === "ride") {
+      return pickup && drop && watch("dropLocation");
+    } else if (formType === "reservation") {
+      return pickup && drop && watch("people") && watch("date") && watch("dropLocation");
+    } else if (formType === "package") {
+      return pickup && drop && weight && watch('weight') && watch("dropLocation");
+    }
+    return false;
+  };
+
+  // Handler to fetch price info on blur
+  const fetchPriceInfo = async () => {
+    if (!isReady()) {
+      setPriceInfo(null);
+      return;
+    }
+    setLoadingPrice(true);
+    setPriceError("");
+    try {
+      const payload = {
+        bookingType: formType,
+        pickupLocation: pickup,
+        dropLocation: drop,
+        weight: formType === "package" ? weight : 0,
+        people: formType === "reservation" ? people : 1,
+      };
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/calculate-booking-price`, payload,  {headers:{Authorization:user.token}});
+      setPriceInfo(res.data);
+    
+    } catch (err) {
+      setPriceInfo(null);
+      setPriceError("Could not fetch price info");
+    } finally {
+      setLoadingPrice(false);
+    }
+  };
+
+   const onSubmit = async(data) => {
+    try {
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+      let payload = {
+        ...data,
+        user: user.userId,
+        bookingType: formType,
+        weight: formType === "package" ? data.weight : 0,
+        people: formType === "reservation" ? data.people : 1,
+      };
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`, 
+      payload,{headers:{Authorization:`${user.token}`}});
+      const stripe = await stripePromise;
+      await stripe.redirectToCheckout({ sessionId: response.data.id });
+    } catch (error) {
+      console.error('Stripe checkout error:', error);
+      // alert('Something went wrong. Please try again.');
+    }
+    finally{
+        reset();
+    }
   };
 
   return (
@@ -62,19 +143,21 @@ const BookingForm = () => {
                 required
               />
               
-              <InputField
+              <PlaceAutocompleteInput
                 label="Pickup Location"
                 name="pickupLocation"
-                register={register}
-                error={errors.pickupLocation}
+                value={pickupLocation}
+                onChange={val => { setPickupLocation(val); setValue("pickupLocation", val, { shouldValidate: true }); }}
+                error={errors.pickupLocation?.message}
                 required
               />
-              <InputField
+              <PlaceAutocompleteInput
                 label="Drop Location"
                 name="dropLocation"
-                register={register}
-                error={errors.dropLocation}
-          required
+                value={dropLocation}
+                onChange={val => { setDropLocation(val); setValue("dropLocation", val, { shouldValidate: true }); }}
+                error={errors.dropLocation?.message}
+                required
               />
              
               <InputField
@@ -84,6 +167,7 @@ const BookingForm = () => {
                 step="0.1"
                 register={register}
                 error={errors.weight}
+                 onBlur={fetchPriceInfo}
                 required
               />
             </>
@@ -98,37 +182,41 @@ const BookingForm = () => {
                 error={errors.fullName}
                 required
               />
-              <InputField
+              <PlaceAutocompleteInput
                 label="Pickup Location"
                 name="pickupLocation"
-                register={register}
-                error={errors.pickupLocation}
+                value={pickupLocation}
+                onChange={val => { setPickupLocation(val); setValue("pickupLocation", val, { shouldValidate: true }); }}
+                error={errors.pickupLocation?.message}
                 required
               />
-              <InputField
+              <PlaceAutocompleteInput
                 label="Drop Location"
                 name="dropLocation"
-                register={register}
-                error={errors.dropLocation}
+                value={dropLocation}
+                onChange={val => { setDropLocation(val); setValue("dropLocation", val, { shouldValidate: true }); }}
+                error={errors.dropLocation?.message}
           required
+                onBlur={fetchPriceInfo}
               />
              
               {formType === "reservation" && (
                 <>
                   <InputField
                     label="Date"
-                    name="Date"
+                    name="date"
                     type="date"
                     register={register}
-                    error={errors.Date}
+                    error={errors.date}
                     required
                   />
                   <InputField
-                    label="No. of Peoples"
-                    name="peoples"
+                    label="No. of People"
+                    name="people"
                     type="number"
                     register={register}
-                    error={errors.peoples}
+                    error={errors.people}
+                    onBlur={fetchPriceInfo}
                     required
                   />
                 </>
@@ -142,17 +230,26 @@ const BookingForm = () => {
             register={register}
             error={errors.note}
           />
+          {/* Show price, distance, and time info */}
+          <div className="my-4">
+            {loadingPrice && <div className="text-primary">Loading price info...</div>}
+            {priceError && <div className="text-red-500">{priceError}</div>}
+            {priceInfo && (
+              <div className="bg-blue-50 rounded p-3 text-center">
+                <p className="text-primary font-medium">Price: ₹{priceInfo.price}</p>
+                <p className="text-primary font-medium">Distance: {priceInfo.distance} km</p>
+                <p className="text-primary font-medium">Estimated Time:{priceInfo.duration}</p>
+              </div>
+            )}
+          </div>
+          
           <Button
             type="submit"
             text={isSubmitting ? "Submitting..." : titleMap[formType]}
             disabled={isSubmitting}
             className="w-full"
           />
-           {/* {isSubmitSuccessful && (
-          <p className="text-green-600 text-center mt-2">
-           { `Thank You for booking a ${titleMap[formType]}.Please Check Your Email for further details.`}
-          </p>
-        )} */}
+
         </form>
 
       </div>

@@ -3,11 +3,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const initialState = {
-  user: null, // will only contain { userId, email, isVerified }
+  user: null,
   status: "idle",
   error: null,
 };
 
+// Login AsyncThunk
 export const loginUser = createAsyncThunk(
   "user/loginUser",
   async ({ email, password }, { rejectWithValue }) => {
@@ -16,15 +17,20 @@ export const loginUser = createAsyncThunk(
         email,
         password,
       });
+
       if (res.data.success === false) {
         return rejectWithValue(res.data.message || "Email Not Found");
       }
+
       if (!res.data?.token) {
         return rejectWithValue("Server response missing token");
       }
-      // Only keep the fields you want to persist
-      const { userId, userEmail, isVerified } = res.data;
-      const user = { userId, email: userEmail, isVerified };
+
+      // Destructure user data to persist
+      const { token, userId, userName, userEmail, userRole,} = res.data;
+      const user = { token, userId, userName, userEmail, userRole, };
+
+      // Store user in localStorage
       localStorage.setItem("user", JSON.stringify(user));
       return user;
     } catch (error) {
@@ -33,19 +39,19 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// Logout AsyncThunk
 export const logoutUser = createAsyncThunk("user/logoutUser", async () => {
   localStorage.removeItem("user");
   return null;
 });
 
+// Slice
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     setUser: (state, action) => {
-      // Only store the fields you want to persist
-      const { userId, email, isVerified } = action.payload;
-      state.user = { userId, email, isVerified };
+      state.user = action.payload; // Store full user object
       state.status = "succeeded";
       state.error = null;
     },
@@ -68,9 +74,7 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        // Only store the fields you want to persist
-        const { userId, email, isVerified } = action.payload;
-        state.user = { userId, email, isVerified };
+        state.user = action.payload; // Store full user object
         state.status = "succeeded";
         state.error = null;
       })

@@ -4,7 +4,7 @@ const driverProfileSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, 
     licenseNumber: { type: String, required: true },
-    availability: { type: Boolean, default: true },
+    status: { type: String, enum: ["available", "busy", "offline"], default: "available" },
   },
   { timestamps: true }
 );

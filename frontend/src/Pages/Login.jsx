@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import Button from "../Components/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { PasswordInput, InputField } from "../Components/InputFields";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, clearError } from "../Redux/userSlice";
+import { loginUser } from "../Redux/userSlice";
 
 const Login = () => {
   const {
@@ -14,16 +14,7 @@ const Login = () => {
   } = useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { status, error, user } = useSelector((state) => state.user);
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        dispatch(clearError());
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, dispatch]);
+  const { status, error,} = useSelector((state) => state.user);
 
   const onSubmit = async (data) => {
     const resultAction = await dispatch(loginUser(data));

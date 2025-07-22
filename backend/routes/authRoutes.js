@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import DriverProfile from "../models/driverProfile.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {sendVerificationCode} from '../utils/mailer.js'
+import {sendVerificationCode,sendResetPasswordEmail} from '../utils/mailer.js'
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
@@ -24,6 +24,7 @@ export const register = async (req, res) => {
       password: hashedPassword,
       verificationCode,
       codeExpiresAt,
+      role: role === "drivingPartner" ? "drivingPartner" : "user",
     });
     await newUser.save();
     if (role === "drivingPartner") {
@@ -36,7 +37,7 @@ export const register = async (req, res) => {
 
       await driverProfile.save();
     }
-    await sendVerificationCode(email, verificationCode);
+    await sendVerificationCode(user.name,email, verificationCode);
 
     return res
       .status(200)
@@ -45,6 +46,7 @@ export const register = async (req, res) => {
         userId: newUser._id,
         email: newUser.email,
         isVerified: newUser.isVerified,
+
       });
   } catch (error) {
     console.error(error.message);
@@ -67,9 +69,6 @@ export const verifyCode = async (req, res) => {
     user.codeExpiresAt = null;
 
     await user.save();
-
-    // Optionally, generate a token here if you want to log in the user after verification
-    // const token = jwt.sign({ userId: user._id, userEmail: user.email, userRole: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     res
       .status(200)
@@ -98,7 +97,7 @@ export const resendCode = async (req, res) => {
     user.codeExpiresAt = codeExpiresAt;
     await user.save();
 
-    await sendVerificationCode(user.email, verificationCode);
+    await sendVerificationCode(user.name,email, verificationCode);
 
     res.json({ success: true, msg: "OTP resent" });
   } catch (err) {
@@ -134,6 +133,7 @@ export const login = async (req, res) => {
         isVerified: user.isVerified,
       userRole: user.role,
     });
+
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ msg: "Internal Server Error" });
@@ -151,21 +151,8 @@ export const resetPasswordLink = async (req, res) => {
       expiresIn: "10m",
     });
     const resetLink = `${FRONTEND_URL}/resetpassword/${token}`;
-
-    // Send email
-    const mailOptions = {
-      from: `${process.env.EMAIL_USER}`,
-      to: `${user.email}`,
-      subject: "Password Reset Request",
-      text: `You requested a password reset.\n\nClick the link to reset your password:\n${resetLink}\n\nIf you did not request this, please ignore this email.`,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).json({ msg: "Error sending reset email." });
-      }
-      return res.json({ msg: "Password reset link sent to your email." });
+    await sendResetPasswordEmail(user.name, user.email, resetLink);
+    res.json({ msg: "Password reset link sent to your email."
     });
   } catch (err) {
     console.error("Error:", err);

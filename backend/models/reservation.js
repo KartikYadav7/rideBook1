@@ -10,7 +10,7 @@ const reservationBookingSchema = new mongoose.Schema(
     pickupLocation: { type: String, required: true },
     dropLocation: { type: String, required: true },
     date: { type: Date, required: true },
-    peoples: { type: Number, required: true },
+    people: { type: Number, required: true },
     note: { type: String },
 
     status: {
@@ -19,6 +19,8 @@ const reservationBookingSchema = new mongoose.Schema(
       default: "requested",
     },
     payment: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+    stripeSessionId: { type: String },
+    trackingNumber: { type: String, unique: true, required: true },
   },
   { timestamps: true }
 );

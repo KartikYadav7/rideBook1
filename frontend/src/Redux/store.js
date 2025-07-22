@@ -1,14 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./userSlice";
-import storageSession from "redux-persist/lib/storage/session";
+import storage from "redux-persist/lib/storage";
 import { persistReducer, persistStore } from "redux-persist";
 import { combineReducers } from "redux";
-import { thunk }from "redux-thunk"; 
+
 
 const userPersistConfig = {
   key: "user",
-  storage: storageSession,
-  whitelist: ["user"], // Only persist the 'user' object, not error/status
+  storage,
+  whitelist: ["user"], 
 };
 
 const rootReducer = combineReducers({
@@ -24,3 +24,5 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
+
+

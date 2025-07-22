@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import nodemailer from "nodemailer";
+import { otpTemplate,resetPasswordTemplate } from "./emailTemplates.js";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -10,13 +11,21 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendVerificationCode = async (email, code) => {
+export const sendVerificationCode = async (userName,email, code) => {
   await transporter.sendMail({
     from: `"rideBook" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Verify your email",
-    text: `Your verification code is: ${code}`,
+   html: otpTemplate(userName, code)
   });
 };
 
-export default transporter;
+export const sendResetPasswordEmail = async (name,email, resetLink) => {
+  await transporter.sendMail({    
+    from: `"rideBook" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Reset your password",
+    html: resetPasswordTemplate(name,resetLink)  
+  });
+};
+

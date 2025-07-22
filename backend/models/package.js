@@ -20,6 +20,7 @@ const packageBookingSchema = new mongoose.Schema(
       default: "requested",
     },
     payment: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+    trackingNumber: { type: String, unique: true, required: true },
   },
   { timestamps: true }
 );

@@ -17,6 +17,8 @@ const rideBookingSchema = new mongoose.Schema(
       default: "requested",
     },
     payment: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+    stripeSessionId: { type: String },
+    trackingNumber: { type: String, unique: true, required: true },
   },
   { timestamps: true }
 );

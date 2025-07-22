@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { FaRegEye,FaRegEyeSlash } from "react-icons/fa";
 
 const PasswordInput = ({
@@ -98,4 +98,84 @@ const InputField = ({
   </div>
 );
 
-export {PasswordInput, InputField};
+const PlaceAutocompleteInput = ({ label, name, value, onChange, error, required, className, placeholder }) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const timeoutRef = useRef();
+
+  const fetchSuggestions = async (query) => {
+    if (!query) {
+      setSuggestions([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `https://places.googleapis.com/v1/places:autocomplete?input=${encodeURIComponent(query)}&key=YOUR_RAPIDAPI_KEY`,
+        {
+          headers: {
+            'X-RapidAPI-Key': `${import.meta.env.VITE_RAPID_API_KEY}` ,
+            'X-RapidAPI-Host': `${import.meta.env.VITE_RAPID_API_HOST}`
+          },
+        }
+      
+      );
+
+      const data = await res.json();
+      setSuggestions(data.predictions || []);
+    } catch (e) {
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    onChange(val);
+    setShowDropdown(true);
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => fetchSuggestions(val), 300);
+  };
+
+  const handleSelect = (suggestion) => {
+    onChange(suggestion.description || suggestion);
+    setShowDropdown(false);
+    setSuggestions([]);
+  };
+
+  return (
+    <div className="relative space-y-1">
+      <label className="block text-sm text-primary font-medium">{label}</label>
+      <input
+        type="text"
+        name={name}
+        value={value}
+        onChange={handleInputChange}
+        required={required}
+        placeholder={placeholder || `Enter ${label}`}
+        className={`w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
+        autoComplete="off"
+        onFocus={() => value && setShowDropdown(true)}
+        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+      />
+      {showDropdown && suggestions.length > 0 && (
+        <ul className="absolute z-10 left-0 right-0 bg-white border border-blue-200 rounded shadow mt-1 max-h-48 overflow-y-auto">
+          {suggestions.map((s, idx) => (
+            <li
+              key={s.place_id || idx}
+              className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+              onClick={() => handleSelect(s)}
+            >
+              {s.description || s.structured_formatting?.main_text || s}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-xs mb-2 text-red-500 h-2.5">{error}</p>
+    </div>
+  );
+};
+
+export { PasswordInput, InputField, PlaceAutocompleteInput };

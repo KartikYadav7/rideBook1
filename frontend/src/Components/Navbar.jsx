@@ -11,7 +11,7 @@ const Navbar = () => {
  
 
   const handleLogout = async () => {
-    await dispatch(logoutUser());
+   dispatch(logoutUser());
   };
 
   return (
@@ -21,14 +21,14 @@ const Navbar = () => {
           <img src="/ridebook.svg" alt="logo" className='h-12 w-12 rounded-full mr-2'/>
           <span className='text-2xl md:text-3xl font-bold text-white'>RideBook</span>
         </div>
-        <ul className='hidden md:flex gap-2 '>
+        <ul className='hidden md:flex gap-2 items-center'>
           <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition'>Home</Link></li>
-          <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition'>My Rides</Link></li>
+          <li><Link to ="/myRides" className='text-white hover:bg-white/20 px-3 py-2 rounded transition'>My Rides</Link></li>
           <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition'>Help</Link></li>
           {user ? (
             <>
-              <li className='text-white px-3 py-2 rounded transition'>Hi, {user.userName|| 'User'}</li>
-              <li><button onClick={handleLogout} className='text-white hover:bg-white/30 px-3 py-2 border rounded transition'>Logout</button></li>
+              <li className='text-white hover:bg-white/30 px-3 py-2 border rounded transition'>Hi,{user.userName}</li>
+              <li><button onClick={handleLogout} className='text-white hover:bg-white/30 px-3 py-2 border rounded transition cursor-pointer'>Logout</button></li>
             </>
           ) : (
             <>
@@ -40,6 +40,7 @@ const Navbar = () => {
         <div className='md:hidden text-2xl text-white cursor-pointer' onClick={() => setToggle(!toggle)}>
           {toggle ? <FaTimes /> : <FaBars />}
         </div>
+
       </div>
       {/* Mobile Menu */}
       {toggle && (
@@ -47,11 +48,11 @@ const Navbar = () => {
       )}
       <ul className={`fixed top-0 right-0 h-full w-64 bg-primary text-white flex flex-col gap-y-4 p-8 md:hidden z-50 shadow-lg transform transition-transform duration-300 ${toggle ? 'translate-x-0' : 'translate-x-full'}`} style={{transitionProperty: 'transform'}}>
         <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition' onClick={() => setToggle(false)}>Home</Link></li>
-        <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition' onClick={() => setToggle(false)}>My Rides</Link></li>
+        <li><Link to ="/myRides" className='text-white hover:bg-white/20 px-3 py-2 rounded transition' onClick={() => setToggle(false)}>My Rides</Link></li>
         <li><Link to ="/" className='text-white hover:bg-white/20 px-3 py-2 rounded transition' onClick={() => setToggle(false)}>Help</Link></li>
         {user ? (
           <>
-            <li className='text-white px-3 py-2 rounded transition'>Hi, {user.email || 'User'}</li>
+            <li className='text-white px-3 py-2 rounded transition'>Hi, {user.userName}</li>
             <li><button onClick={() => { setToggle(false); handleLogout(); }} className='text-white hover:bg-white/30 px-3 py-2 border rounded transition'>Logout</button></li>
           </>
         ) : (
