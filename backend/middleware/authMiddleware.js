@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export const verifyToken = (requiredRole = null) => {
+export const verifyToken = (...requiredRoles ) => {
   return (req, res, next) => {
     const token = req.header("Authorization");
 
@@ -11,7 +11,8 @@ export const verifyToken = (requiredRole = null) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
 
-      if (requiredRole && decoded.userRole !== requiredRole) {
+  
+      if (requiredRoles.length && !requiredRoles.includes(decoded.userRole)) {
         return res
           .status(403)
           .json({ msg: "Access denied: insufficient permissions" });

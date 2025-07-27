@@ -22,7 +22,7 @@ const LoginUser = () => {
               className="w-full p-3 border-none outline-none rounded text-[#333] bg-white" />
           </div>
           <Button text="Login" className={`w-full`} />
-         <p className='text-xl my-3'>Don't have an account? <span className='text-primary hover:underline'><Link href="/">Sign up here</Link></span></p>
+          <p className='text-xl my-3'>Don't have an account? <span className='text-primary hover:underline'><Link href="/">Sign up here</Link></span></p>
         </form>
       </section>
     </>

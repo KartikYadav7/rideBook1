@@ -39,7 +39,8 @@ const SelectRide = () => {
               <p className="text-black/70">{ride.description}</p>
               <div className="font-bold text-lg my-2">Price:{ride.price}</div>
               <Button text="Book Now" onClick={() => {
-  navigate("/bookingForm", { state: { formType:"ride"} });} }/>
+                navigate("/bookingForm", { state: { formType: "ride" } });
+              }} />
             </div>
           ))}
         </div>

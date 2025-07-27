@@ -4,11 +4,10 @@ import storage from "redux-persist/lib/storage";
 import { persistReducer, persistStore } from "redux-persist";
 import { combineReducers } from "redux";
 
-
 const userPersistConfig = {
   key: "user",
   storage,
-  whitelist: ["user"], 
+  whitelist: ["user"],
 };
 
 const rootReducer = combineReducers({
@@ -19,10 +18,12 @@ export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,
+      serializableCheck: {
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+        ignoredPaths: ["user"],
+      },
+      immutableCheck: false,
     }),
 });
 
 export const persistor = persistStore(store);
-
-

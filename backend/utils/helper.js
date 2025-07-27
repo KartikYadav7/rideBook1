@@ -12,8 +12,10 @@ function generateTrackingNumber(prefix) {
 }
 
 async function calculateDistance(pickupLocation, dropLocation) {
-  const apiKey = process.env.API_KEY;
-
+  const apiKey = process.env.DISTANCE_MATRIX_API_KEY;
+  if (!apiKey) {
+    throw new Error("Distance Matrix API key is not set.");
+  }
   const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${encodeURIComponent(pickupLocation)}&destinations=${encodeURIComponent(dropLocation)}&key=${apiKey}`;
   try {
     const response = await axios.get(url);
@@ -25,7 +27,6 @@ async function calculateDistance(pickupLocation, dropLocation) {
       data.rows[0].elements[0].status !== "OK" ||
       !data.rows[0].elements[0].distance
     ) {
-      console.error("Failed to fetch distance");
       throw new Error("Failed to fetch distance");
     }
 
@@ -36,7 +37,7 @@ async function calculateDistance(pickupLocation, dropLocation) {
     const distanceKm = parseFloat(distanceText.replace(/[^0-9.]/g, ""));
 
     // Optionally log once, or remove for production
-    console.log("Distance in calc distance:", distanceKm, "km", "Duration:", durationTime);
+    console.log("After Actual Api called", distanceKm, "km", "Duration:", durationTime, Date.now());
     
     return {distanceKm,durationTime};
   } catch (error) {
@@ -47,14 +48,10 @@ async function calculateDistance(pickupLocation, dropLocation) {
 
 async function calculatePrice({ bookingType, weight, pickupLocation, dropLocation, distanceKm, durationTime }) {
   try {
-    if (typeof distanceKm !== "number" || isNaN(distanceKm) || distanceKm <= 0) {
+    if (typeof distanceKm !== "number" || isNaN(distanceKm) || distanceKm <= 0 || !durationTime) {
       const result = await calculateDistance(pickupLocation, dropLocation);
       distanceKm = result.distanceKm;
       durationTime = result.durationTime;
-    }
-
-    if (typeof distanceKm !== "number" || isNaN(distanceKm) || distanceKm <= 0) {
-      throw new Error("Invalid distance calculated. Cannot proceed with price calculation.");
     }
 
     let base = 0;
@@ -65,9 +62,9 @@ async function calculatePrice({ bookingType, weight, pickupLocation, dropLocatio
       else if(weight<=25) base = 50 + distanceKm * 15 + weight * 8;
       else if(weight<=50) base = 110 + distanceKm * 18 + weight * 6;
     }
-    return Math.round(base * 100);
+    base = Math.round(base * 100);
+    return { base, distanceKm, durationTime };
   } catch (error) {
-    console.error("Error calculating price:", error.message)
     throw new Error("Unable to calculate price due to distance calculation failure.");
   }
 } 

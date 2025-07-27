@@ -1,13 +1,16 @@
-import User from "../models/User.js";
+import User from "../models/user.js";
 import DriverProfile from "../models/driverProfile.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {sendVerificationCode,sendResetPasswordEmail} from '../utils/mailer.js'
+import {
+  sendVerificationCode,
+  sendResetPasswordEmail,
+} from "../utils/mailer.js";
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
 export const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { userName, email, password, role } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -19,7 +22,7 @@ export const register = async (req, res) => {
     const codeExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
-      name,
+      name: userName,
       email,
       password: hashedPassword,
       verificationCode,
@@ -37,17 +40,14 @@ export const register = async (req, res) => {
 
       await driverProfile.save();
     }
-    await sendVerificationCode(user.name,email, verificationCode);
+    await sendVerificationCode(newUser.name, email, verificationCode);
 
-    return res
-      .status(200)
-      .json({
-        msg: "Registration Successful",
-        userId: newUser._id,
-        email: newUser.email,
-        isVerified: newUser.isVerified,
-
-      });
+    return res.status(200).json({
+      msg: "Registration Successful",
+      userId: newUser._id,
+      email: newUser.email,
+      isVerified: newUser.isVerified,
+    });
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({ msg: "Internal Server Error" });
@@ -70,9 +70,7 @@ export const verifyCode = async (req, res) => {
 
     await user.save();
 
-    res
-      .status(200)
-      .json({ msg: "Verified successfully", success: true });
+    res.status(200).json({ msg: "Verified successfully", success: true });
   } catch (err) {
     res.status(500).json({ msg: "Code verification failed", err });
   }
@@ -84,9 +82,7 @@ export const resendCode = async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user)
-      return res
-        .status(404)
-        .json({ success: false, msg: "User not found" });
+      return res.status(404).json({ success: false, msg: "User not found" });
 
     const verificationCode = Math.floor(
       100000 + Math.random() * 900000
@@ -97,13 +93,11 @@ export const resendCode = async (req, res) => {
     user.codeExpiresAt = codeExpiresAt;
     await user.save();
 
-    await sendVerificationCode(user.name,email, verificationCode);
+    await sendVerificationCode(user.name, user.email, verificationCode);
 
     res.json({ success: true, msg: "OTP resent" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ success: false, msg: "Failed to resend OTP", err });
+    res.status(500).json({ success: false, msg: "Failed to resend OTP", err });
   }
 };
 
@@ -121,19 +115,18 @@ export const login = async (req, res) => {
       { userId: user._id, userEmail: user.email, userRole: user.role },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1d",
+        expiresIn: "999D",
       }
     );
 
     return res.json({
       token,
-        userId: user._id,
-        userEmail: user.email,
-        userName: user.name,
-        isVerified: user.isVerified,
+      userId: user._id,
+      userEmail: user.email,
+      userName: user.name,
+      isVerified: user.isVerified,
       userRole: user.role,
     });
-
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ msg: "Internal Server Error" });
@@ -152,8 +145,7 @@ export const resetPasswordLink = async (req, res) => {
     });
     const resetLink = `${FRONTEND_URL}/resetpassword/${token}`;
     await sendResetPasswordEmail(user.name, user.email, resetLink);
-    res.json({ msg: "Password reset link sent to your email."
-    });
+    res.json({ msg: "Password reset link sent to your email." });
   } catch (err) {
     console.error("Error:", err);
     res.status(500).json({ msg: "Server error." });

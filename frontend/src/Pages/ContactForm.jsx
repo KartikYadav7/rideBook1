@@ -1,19 +1,40 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Button from "../Components/Button";
+import { useSelector } from "react-redux";
 import { InputField } from "../Components/InputFields";
+import axios from "axios";
+
 const ContactForm = () => {
   const {
     register,
     handleSubmit,
-    reset,
-    formState: { errors, isSubmitting, isSubmitSuccessful },
+    formState: { errors, isSubmitting },
   } = useForm();
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const { user } = useSelector((state) => state.user);
 
-  const onSubmit = (data) => {
-    // Here you would send data to your backend or email service
-    console.log("Contact Form Data:", data);
-    reset();
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  const onSubmit = async (data) => {
+    setError("");
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/contact`,
+        data,
+        { headers: { Authorization: `${user.token}` } }
+      );
+      if (response) setSuccess(true);
+    } catch (error) {
+      console.error(error);
+      setError(error.message);
+    }
   };
 
   return (
@@ -22,50 +43,56 @@ const ContactForm = () => {
         Contact Us
       </h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
-        <InputField
-          label="Name"
-          name="name"
-          register={register}
-          error={errors.name}
-          placeholder={`Enter Your Name`}
-          required
-        />
-        <InputField
-          label="Email"
-          name="email"
-          register={register}
-          error={errors.email}
-          placeholder="Enter Your Email"
-          required
-        />
+        {!success ? (
+          <>
+            <InputField
+              label="Name"
+              name="name"
+              register={register}
+              error={errors.name}
+              placeholder={`Enter Your Name`}
+              required
+            />
+            <InputField
+              label="Email"
+              name="email"
+              register={register}
+              error={errors.email}
+              placeholder="Enter Your Email"
+              required
+            />
 
-        <InputField
-          label="Subject"
-          name="subject"
-          register={register}
-          error={errors.subject}
-          required
-        />
-        <InputField
-          label="Message"
-          name="message"
-          type="textarea"
-          register={register}
-          error={errors.message}
-          placeholder="Write Your Queries"
-          required
-        />
+            <InputField
+              label="Subject"
+              name="subject"
+              register={register}
+              error={errors.subject}
+              required
+            />
 
-        <Button
-          type="submit"
-          text={isSubmitting ? "Sending..." : "Send Message"}
-          disabled={isSubmitting}
-          className="w-full mt-2"
-        />
-        {isSubmitSuccessful && (
-          <p className="text-green-600 text-center mt-2">
-            Thank you for contacting us! We will get back to you soon.
-          </p>
+            <InputField
+              label="Message"
+              name="message"
+              type="textarea"
+              register={register}
+              error={errors.message}
+              placeholder="Write Your Queries"
+              required
+            />
+            <p className="text-xs text-red-500 h-2.5 mb-0">{error}</p>
+            <Button
+              type="submit"
+              text={isSubmitting ? "Sending..." : "Send Message"}
+              disabled={isSubmitting}
+              className="w-full mt-2"
+            />
+          </>
+        ) : (
+          <>
+            <p className="text-green-500">
+              ThankYou for Contacting Us. We'll reach out to you shortly.
+            </p>
+          </>
         )}
       </form>
     </section>

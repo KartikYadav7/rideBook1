@@ -4,6 +4,7 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import axios from "axios";
 import Button from "../Components/Button";
+import CustomAlert from "../Components/CustomAlert";
 
 const statusColors = {
   confirmed: "text-green-600 border-green-400 bg-green-50",
@@ -23,6 +24,7 @@ const MyRides = () => {
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState("");
   const [updateDialog, setUpdateDialog] = useState({ open: false, type: '', trackingNumber: '', oldStatus: '', newStatus: '' });
+  const [alert, setAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
 
   useEffect(() => {
     if (!user) return;
@@ -32,7 +34,7 @@ const MyRides = () => {
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/${user.userId}/bookings`,
-          { headers: { Authorization: user.token } }
+          { headers: { Authorization: `${user.token}` } }
         );
         setBookings(res.data);
       } catch (err) {
@@ -47,11 +49,20 @@ const MyRides = () => {
   const handleCancel = async (type, trackingNumber) => {
     setActionLoading(trackingNumber + type);
     try {
-      await axios.patch(
-        `${import.meta.env.VITE_BACKEND_URL}/booking/${type}/${trackingNumber}/cancel`,
-        {},
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/${type}/${trackingNumber}/cancel`, {},
         { headers: { Authorization: user.token } }
       );
+
+
+      const emailStatus = response.data.emailSent ? "Emails sent successfully." : "Emails could not be sent.";
+      setAlert({
+        isOpen: true,
+        title: "Booking Cancelled",
+        message: `Booking cancelled successfully. ${emailStatus}`,
+        type: "success"
+      });
+
       setBookings((prev) => {
         const update = (arr) =>
           arr.map((b) =>
@@ -64,7 +75,21 @@ const MyRides = () => {
         };
       });
     } catch (err) {
-      alert("Failed to cancel booking");
+      if (err.response && err.response.data && err.response.data.error) {
+        setAlert({
+          isOpen: true,
+          title: "Cancellation Failed",
+          message: err.response.data.error,
+          type: "error"
+        });
+      } else {
+        setAlert({
+          isOpen: true,
+          title: "Error",
+          message: "Failed to cancel booking",
+          type: "error"
+        });
+      }
     } finally {
       setActionLoading("");
     }
@@ -75,11 +100,22 @@ const MyRides = () => {
     if (!newStatus || newStatus === oldStatus) return setUpdateDialog({ open: false, type: '', trackingNumber: '', oldStatus: '', newStatus: '' });
     setActionLoading(trackingNumber + type + "update");
     try {
-      await axios.patch(
+      const response = await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/booking/${type}/${trackingNumber}`,
         { status: newStatus },
         { headers: { Authorization: user.token } }
       );
+
+      // Show success message with review info if completed
+      if (newStatus === 'completed') {
+        setAlert({
+          isOpen: true,
+          title: "Booking Completed",
+          message: "Booking marked as completed!.",
+          type: "success"
+        });
+      }
+
       setBookings((prev) => {
         const update = (arr) =>
           arr.map((b) =>
@@ -93,7 +129,12 @@ const MyRides = () => {
       });
       setUpdateDialog({ open: false, type: '', trackingNumber: '', oldStatus: '', newStatus: '' });
     } catch (err) {
-      alert("Failed to update status");
+      setAlert({
+        isOpen: true,
+        title: "Update Failed",
+        message: "Failed to update status",
+        type: "error"
+      });
     } finally {
       setActionLoading("");
     }
@@ -147,18 +188,25 @@ const MyRides = () => {
       <div className="flex flex-col gap-2 min-w-[120px] items-end">
         {booking.status !== "cancelled" && booking.status !== "completed" && (
           <>
-            <Button
-              text={actionLoading === booking.trackingNumber + type ? "Cancelling..." : "Cancel"}
-              className="bg-red-600 hover:bg-red-700 w-full"
-              onClick={() => handleCancel(type, booking.trackingNumber)}
-              disabled={actionLoading === booking.trackingNumber + type}
-            />
-            <Button
-              text={actionLoading === booking.trackingNumber + type + "update" ? "Updating..." : "Update"}
-              className="bg-primary hover:bg-primary-dark w-full"
-              onClick={() => setUpdateDialog({ open: true, type, trackingNumber: booking.trackingNumber, oldStatus: booking.status, newStatus: booking.status })}
-              disabled={actionLoading === booking.trackingNumber + type + "update"}
-            />
+
+            {user && user.userRole === "user" && booking.status !== "in-transit" && (
+              <Button
+                text={actionLoading === booking.trackingNumber + type ? "Cancelling..." : "Cancel"}
+                className="bg-red-600 hover:bg-red-700 w-full"
+                onClick={() => handleCancel(type, booking.trackingNumber)}
+                disabled={actionLoading === booking.trackingNumber + type}
+              />
+            )}
+
+            {user && user.userRole === "drivingPartner" && booking.status !== "completed" && booking.status !== "delivered" && (
+              <Button
+                text={actionLoading === booking.trackingNumber + type + "update" ? "Updating..." : "Update"}
+                className="bg-primary hover:bg-primary-dark w-full"
+                onClick={() => setUpdateDialog({ open: true, type, trackingNumber: booking.trackingNumber, oldStatus: booking.status, newStatus: booking.status })}
+                disabled={actionLoading === booking.trackingNumber + type + "update"}
+              />
+            )}
+
           </>
         )}
       </div>
@@ -167,32 +215,28 @@ const MyRides = () => {
 
   // Possible status values for each type
   const statusOptions = {
-    ride: ["requested", "confirmed", "in-progress", "completed", "cancelled"],
-    reservation: ["requested", "confirmed", "in-progress", "completed", "cancelled"],
-    package: ["requested", "confirmed", "in-transit", "delivered", "cancelled"],
+    ride: ["in-progress", "completed",],
+    reservation: ["in-progress", "completed",],
+    package: ["in-transit", "delivered",],
   };
 
-  // Dialog box JSX
   const UpdateStatusDialog = () => (
     updateDialog.open ? (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
           <h3 className="text-xl font-bold text-primary mb-4">Update Booking Status</h3>
-          <label className="block mb-2 text-sm font-medium text-gray-700">Select or enter new status:</label>
-          <input
+          <label className="block mb-2 text-sm font-medium text-gray-700">Select new status:</label>
+          <select
             className="border rounded px-3 py-2 w-full mb-4"
-            type="text"
-            list="status-list"
             value={updateDialog.newStatus}
             onChange={e => setUpdateDialog(d => ({ ...d, newStatus: e.target.value }))}
             disabled={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update"}
-            placeholder="Type or select status..."
-          />
-          <datalist id="status-list">
+          >
+            <option value="" disabled>Select status...</option>
             {(statusOptions[updateDialog.type] || []).map(opt => (
-              <option key={opt} value={opt} />
+              <option key={opt} value={opt}>{opt}</option>
             ))}
-          </datalist>
+          </select>
           <div className="flex justify-end gap-2 mt-4">
             <Button text="Cancel" className="bg-gray-300 text-gray-800 hover:bg-gray-400" onClick={() => setUpdateDialog({ open: false, type: '', trackingNumber: '', oldStatus: '', newStatus: '' })} disabled={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update"} />
             <Button text={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update" ? "Updating..." : "Update"} className="bg-primary hover:bg-primary-dark" onClick={handleUpdateStatus} disabled={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update" || !updateDialog.newStatus || updateDialog.newStatus === updateDialog.oldStatus} />
@@ -204,31 +248,38 @@ const MyRides = () => {
 
   return (
     <>
-    <Navbar/>
-    <section className="min-h-screen bg-blue-50 py-8 px-2 md:px-0">
-      <div className="max-w-2xl mx-auto">
-        <h2 className="text-3xl font-bold text-primary mb-6">My Rides & Bookings</h2>
-        {loading ? (
-          <div className="text-center text-primary">Loading...</div>
-        ) : error ? (
-          <div className="text-center text-red-600">{error}</div>
-        ) : (
-          <>
-            {bookings.rides.length === 0 && bookings.packages.length === 0 && bookings.reservations.length === 0 ? (
-              <div className="text-center text-gray-500">No bookings found.</div>
-            ) : (
-              <>
-                {bookings.rides.map((b) => renderBookingCard(b, "ride"))}
-                {bookings.packages.map((b) => renderBookingCard(b, "package"))}
-                {bookings.reservations.map((b) => renderBookingCard(b, "reservation"))}
-              </>
-            )}
-          </>
-        )}
-      </div>
-      <UpdateStatusDialog />
-    </section>
-    <Footer/>
+      <Navbar />
+      <section className="min-h-screen bg-blue-50 py-8 px-2 md:px-0">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold text-primary mb-6">My Rides & Bookings</h2>
+          {loading ? (
+            <div className="text-center text-primary">Loading...</div>
+          ) : error ? (
+            <div className="text-center text-red-600">{error}</div>
+          ) : (
+            <>
+              {bookings?.rides?.length === 0 && bookings?.packages?.length === 0 && bookings?.reservations?.length === 0 ? (
+                <div className="text-center text-primary">No bookings found.</div>
+              ) : (
+                <>
+                  {bookings.rides.map((b) => renderBookingCard(b, "ride"))}
+                  {bookings.packages.map((b) => renderBookingCard(b, "package"))}
+                  {bookings.reservations.map((b) => renderBookingCard(b, "reservation"))}
+                </>
+              )}
+            </>
+          )}
+        </div>
+        <UpdateStatusDialog />
+        <CustomAlert
+          isOpen={alert.isOpen}
+          onClose={() => setAlert({ ...alert, isOpen: false })}
+          title={alert.title}
+          message={alert.message}
+          type={alert.type}
+        />
+      </section>
+      <Footer />
     </>
   );
 };

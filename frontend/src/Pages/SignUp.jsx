@@ -31,13 +31,14 @@ const SignUp = () => {
         data
       );
 
-       {console.log("Navigating to /verification1");}
+      { console.log("Navigating to /verification1"); }
       const { userId, email: registeredEmail, isVerified } = res.data;
- { console.log("Navigating to /verification2");
-}
-      // Redux: Save user state (only userId, email, isVerified)
+      {
+        console.log("Navigating to /verification2");
+      }
+     
       dispatch(setUser({ userId, email: registeredEmail, isVerified }));
-   {console.log("Navigating to /verification3");}
+      { console.log("Navigating to /verification3"); }
       navigate("/verification");
       reset();
     } catch (err) {
@@ -56,11 +57,11 @@ const SignUp = () => {
           SignUp
         </h2>
 
-     
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <InputField
             label="Name"
-            name="name"
+            name="userName"
             register={register}
             required
             error={errors.name}
@@ -157,9 +158,9 @@ const SignUp = () => {
               }}
             />
           )}
-    
-      <p className="text-red-500 h-2.5 mb-2 text-sm ">{error}</p>
-        
+
+          <p className="text-red-500 h-2.5 mb-2 text-sm ">{error}</p>
+
           <Button
             type="submit"
             text={isSubmitting ? "Registering..." : "Sign Up"}

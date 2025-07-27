@@ -22,7 +22,7 @@ const PaymentSuccess = () => {
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/check-payment-status`,
-        { session_id: sessionId },{headers:{Authorization:`${user.token}`}});
+        { session_id: sessionId }, { headers: { Authorization: `${user.token}` } });
       setStatus(res.data);
     } catch (err) {
       setError(
@@ -32,7 +32,7 @@ const PaymentSuccess = () => {
     } finally {
       setLoading(false);
     }
-  }, [sessionId,user.token]);
+  }, [sessionId, user.token]);
 
   useEffect(() => {
     checkStatus();

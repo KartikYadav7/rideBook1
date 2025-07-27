@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { FaRegEye,FaRegEyeSlash } from "react-icons/fa";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 const PasswordInput = ({
   label,
@@ -17,11 +17,11 @@ const PasswordInput = ({
 
   return (
     <div className="relative flex flex-col space-y-1">
-      <label  htmlFor={name} className="text-primary font-medium">
+      <label htmlFor={name} className="text-primary font-medium">
         {label}
       </label>
       <input
-      required={required}
+        required={required}
         type={showPassword ? "text" : "password"}
         placeholder={placeholder}
         className={`bg-blue-50 w-full border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
@@ -43,8 +43,6 @@ const PasswordInput = ({
   );
 };
 
-
-
 const InputField = ({
   label,
   type = "text",
@@ -52,16 +50,16 @@ const InputField = ({
   register,
   error,
   required,
-  className ,
+  className,
   validation,
-  options=[],
+  options = [],
   ...rest
 }) => (
   <div className="space-y-1">
     <label className="block text-sm text-primary font-medium">{label}</label>
     {type === "textarea" ? (
       <textarea
-      placeholder={`Write something`}
+        placeholder={`Write something`}
         className={`w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] resize-y text-base`}
         {...register(name, {
           required: required && `${label} is required`,
@@ -69,20 +67,22 @@ const InputField = ({
         })}
         {...rest}
       />
-    ) :  type === "select" ? (
-        <select
-          {...register(name,  {required: required && `${label} is required`,
-            ...validation})}
-          {...rest}
-         className="w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary "
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value} className="text-primary">
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      ) : (
+    ) : type === "select" ? (
+      <select
+        {...register(name, {
+          required: required && `${label} is required`,
+          ...validation
+        })}
+        {...rest}
+        className="w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary "
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value} className="text-primary">
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    ) : (
       <input
         type={type}
         placeholder={`Enter ${label} `}
@@ -98,36 +98,34 @@ const InputField = ({
   </div>
 );
 
-const PlaceAutocompleteInput = ({ label, name, value, onChange, error, required, className, placeholder }) => {
+
+const PlaceAutocompleteInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  error,
+  required,
+  className,
+  placeholder
+}) => {
   const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const timeoutRef = useRef();
 
   const fetchSuggestions = async (query) => {
-    if (!query) {
+    if (!query || query.length < 3) {
       setSuggestions([]);
       return;
     }
-    setLoading(true);
     try {
       const res = await fetch(
-        `https://places.googleapis.com/v1/places:autocomplete?input=${encodeURIComponent(query)}&key=YOUR_RAPIDAPI_KEY`,
-        {
-          headers: {
-            'X-RapidAPI-Key': `${import.meta.env.VITE_RAPID_API_KEY}` ,
-            'X-RapidAPI-Host': `${import.meta.env.VITE_RAPID_API_HOST}`
-          },
-        }
-      
+        `${import.meta.env.VITE_BACKEND_URL}/places-autocomplete?input=${encodeURIComponent(query)}`
       );
-
       const data = await res.json();
       setSuggestions(data.predictions || []);
     } catch (e) {
       setSuggestions([]);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -146,36 +144,40 @@ const PlaceAutocompleteInput = ({ label, name, value, onChange, error, required,
   };
 
   return (
-    <div className="relative space-y-1">
-      <label className="block text-sm text-primary font-medium">{label}</label>
-      <input
-        type="text"
-        name={name}
-        value={value}
-        onChange={handleInputChange}
-        required={required}
-        placeholder={placeholder || `Enter ${label}`}
-        className={`w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
-        autoComplete="off"
-        onFocus={() => value && setShowDropdown(true)}
-        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-      />
-      {showDropdown && suggestions.length > 0 && (
-        <ul className="absolute z-10 left-0 right-0 bg-white border border-blue-200 rounded shadow mt-1 max-h-48 overflow-y-auto">
-          {suggestions.map((s, idx) => (
-            <li
-              key={s.place_id || idx}
-              className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
-              onClick={() => handleSelect(s)}
-            >
-              {s.description || s.structured_formatting?.main_text || s}
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="text-xs mb-2 text-red-500 h-2.5">{error}</p>
-    </div>
+    <>
+      <div className="relative space-y-1">
+        <label className="block text-sm text-primary font-medium">{label}</label>
+        <input
+          type="text"
+          name={name}
+          value={value}
+          onChange={handleInputChange}
+          required={required}
+          placeholder={placeholder || `Enter ${label}`}
+          className={`w-full border border-blue-200 rounded-lg px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
+          autoComplete="off"
+          onFocus={() => value && setShowDropdown(true)}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+        />
+        {showDropdown && suggestions.length > 0 && (
+          <ul className="absolute z-10 left-0 right-0 bg-white border border-blue-200 rounded shadow mt-1 max-h-48 overflow-y-auto">
+            {suggestions.map((s, idx) => (
+              <li
+                key={s.place_id || idx}
+                className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+                onClick={() => handleSelect(s)}
+              >
+                {s.description || s.structured_formatting?.main_text || s}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="text-xs mb-2 text-red-500 h-2.5">{error?.message}</p>
+
+      </div>
+
+    </>
   );
 };
 
-export { PasswordInput, InputField, PlaceAutocompleteInput };
+export { PasswordInput, InputField, PlaceAutocompleteInput, };

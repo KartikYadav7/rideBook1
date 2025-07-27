@@ -13,10 +13,13 @@ export const loginUser = createAsyncThunk(
   "user/loginUser",
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/login`, {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/login`,
+        {
+          email,
+          password,
+        }
+      );
 
       if (res.data.success === false) {
         return rejectWithValue(res.data.message || "Email Not Found");
@@ -26,11 +29,11 @@ export const loginUser = createAsyncThunk(
         return rejectWithValue("Server response missing token");
       }
 
-      // Destructure user data to persist
-      const { token, userId, userName, userEmail, userRole,} = res.data;
-      const user = { token, userId, userName, userEmail, userRole, };
+     
+      const { token, userId, userName, userEmail, userRole } = res.data;
+      const user = { token, userId, userName, userEmail, userRole };
 
-      // Store user in localStorage
+      
       localStorage.setItem("user", JSON.stringify(user));
       return user;
     } catch (error) {
@@ -39,7 +42,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Logout AsyncThunk
+
 export const logoutUser = createAsyncThunk("user/logoutUser", async () => {
   localStorage.removeItem("user");
   return null;
@@ -51,7 +54,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user = action.payload; // Store full user object
+      state.user = action.payload; 
       state.status = "succeeded";
       state.error = null;
     },
@@ -74,7 +77,7 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.user = action.payload; // Store full user object
+        state.user = action.payload; 
         state.status = "succeeded";
         state.error = null;
       })
@@ -90,5 +93,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser, markVerified, clearError } = userSlice.actions;
+export const { setUser, clearUser, markVerified, clearError } =
+  userSlice.actions;
 export default userSlice.reducer;

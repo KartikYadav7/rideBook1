@@ -3,6 +3,7 @@ import { IoIosArrowUp } from "react-icons/io";
 import { IoIosArrowDown } from "react-icons/io";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 function FAQItem({ question, answer }) {
   const [show, setShow] = useState(false);
 
@@ -25,7 +26,7 @@ function FAQItem({ question, answer }) {
   );
 }
 
-const faqList = [
+const userFaqList = [
   {
     question: "How do I book a ride?",
     answer: "You can book a ride using our app or website easily.",
@@ -51,7 +52,33 @@ const faqList = [
   },
 ];
 
+const driverFaqList = [
+  {
+    question: "How do I accept a ride request?",
+    answer: "You will receive ride requests in your driver dashboard. Accept or decline as per your availability.",
+  },
+  {
+    question: "How do I update my availability?",
+    answer: "Go to your profile and set your status to available or unavailable.",
+  },
+  {
+    question: "How do I get paid?",
+    answer: "Payments are processed weekly to your registered bank account.",
+  },
+  {
+    question: "What if a rider cancels?",
+    answer: "You will be notified instantly. Cancellation policies may apply.",
+  },
+  {
+    question: "How do I contact support?",
+    answer: "You can contact support via the app or website, or call our driver helpline.",
+  },
+];
+
 export default function FAQSection() {
+  const user = useSelector(state => state.user.user);
+  const role = user?.userRole;
+  const faqList = role === "driver" ? driverFaqList : userFaqList;
   return (
     <section className="bg-[#414141] text-[#e0e0e0] py-12 px-6 text-center">
       <h2 className="text-4xl text-primary font-bold mb-4">Need Assistance?</h2>
@@ -59,7 +86,6 @@ export default function FAQSection() {
         We're here to help! Browse through our frequently asked questions or
         contact our support team.
       </p>
-
       <div className="max-w-[800px] mx-auto text-left my-8">
         {faqList.map((faq, index) => (
           <FAQItem key={index} question={faq.question} answer={faq.answer} />
