@@ -36,6 +36,8 @@ export const calculateBookingPrice = async (req, res) => {
       price: priceInRupees,
       amount: amount.base,
       currency: "INR",
+      distance: (amount.distanceKm),
+      duration:( amount.durationTime)
     });
   } catch (error) {
     return res.status(500).json({ error: "Failed to calculate price" });

@@ -7,13 +7,9 @@ const ProtectedRoute = () => {
   if (!user) {
     return <Navigate to="/login" />;
   }
-  if (!user && !user?.isVerified) {
-    return <Navigate to="/verification" />;
-  }
-  if (user?.isVerified) {
+  if (!user?.isVerified) {
     return <Navigate to="/" />;
   }
-
 
   return <Outlet />;
 };

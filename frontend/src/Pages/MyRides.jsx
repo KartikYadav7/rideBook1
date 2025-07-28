@@ -189,7 +189,7 @@ const MyRides = () => {
         {booking.status !== "cancelled" && booking.status !== "completed" && (
           <>
 
-            {user && user.userRole === "user" && booking.status !== "in-transit" && (
+            {user && user.userRole === "user" && booking.status !== "in-transit" && booking.status !== "delivered"(
               <Button
                 text={actionLoading === booking.trackingNumber + type ? "Cancelling..." : "Cancel"}
                 className="bg-red-600 hover:bg-red-700 w-full"
