@@ -30,8 +30,8 @@ export const loginUser = createAsyncThunk(
       }
 
      
-      const { token, userId, userName, userEmail, userRole } = res.data;
-      const user = { token, userId, userName, userEmail, userRole };
+      const { token, userId, userName, userEmail, userRole , isVerified} = res.data;
+      const user = { token, userId, userName, userEmail, userRole, isVerified};
 
       
       localStorage.setItem("user", JSON.stringify(user));
