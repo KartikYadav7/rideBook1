@@ -88,7 +88,7 @@ app.post("/booking/:trackingNumber/review", verifyToken("user"), submitReview);
 app.post("/contact", contact);
 
 //places Autocomplete Feature
-app.use("/places-autocomplete", autoCompleteFeature);
+app.use("/places-autocomplete",  verifyToken("user", "drivingPartner"),autoCompleteFeature);
 
 app.listen(port, () => {
   console.log(`server is running on port:${port}`);
