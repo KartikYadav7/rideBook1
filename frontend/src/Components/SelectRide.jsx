@@ -37,8 +37,10 @@ const SelectRide = () => {
               <img src={ride.image} className="w-full h-[200px] object-cover rounded-2xl" />
               <h3 className="text-xl text-primary font-medium my-3">{ride.name}</h3>
               <p className="text-black/70">{ride.description}</p>
-              <div className="font-bold text-lg my-2">Price:{ride.price}</div>
-              <Button text="Book Now" onClick={() => {
+              {/* <div className="font-bold text-lg my-2">Price:{ride.price}</div> */}
+              <Button text="Book Now" 
+              className="my-4"
+              onClick={() => {
                 navigate("/bookingForm", { state: { formType: "ride" } });
               }} />
             </div>
