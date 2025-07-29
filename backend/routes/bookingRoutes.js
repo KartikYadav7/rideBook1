@@ -623,20 +623,20 @@ export const submitReview = async (req, res) => {
 
     const existingReview = await Review.findOne({
       user: userId,
-      driver: booking.driver,
+       booking: booking._id,
     });
 
     if (existingReview) {
       return res
         .status(400)
         .json({
-          error: "You have already reviewed this driver for this booking",
+          error: "You have already reviewed this booking",
         });
     }
-
-    const review = await Review.create({
+ const review = await Review.create({
       user: userId,
       driver: booking.driver,
+      booking: booking._id,
       rating,
       comment: comment || "",
     });
