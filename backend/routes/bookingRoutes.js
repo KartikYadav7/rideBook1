@@ -610,12 +610,11 @@ export const submitReview = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    if (booking.status !== "completed" || booking.status !== "delivered") {
+    if (booking.status !== "completed" && booking.status !== "delivered") {
       return res
         .status(400)
         .json({ error: "Can only review completed bookings" });
     }
-
     if (booking.user.toString() !== userId) {
       return res
         .status(403)

@@ -95,7 +95,7 @@ const Review = () => {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <section className="min-h-screen bg-blue-50 py-8 px-4">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-bold text-primary mb-6 text-center">
@@ -150,7 +150,7 @@ const Review = () => {
                 type="button"
                 text="Cancel"
                 className="flex-1 bg-gray-300 text-gray-800 hover:bg-gray-400"
-                onClick={() => navigate("/my-rides")}
+                onClick={() => navigate("/myRides")}
                 disabled={loading}
               />
               <Button
