@@ -54,12 +54,10 @@ const MyRides = () => {
         { headers: { Authorization: user.token } }
       );
 
-
-      const emailStatus = response.data.emailSent ? "Emails sent successfully." : "Emails could not be sent.";
       setAlert({
         isOpen: true,
         title: "Booking Cancelled",
-        message: `Booking cancelled successfully. ${emailStatus}`,
+        message: `Booking cancelled successfully.`,
         type: "success"
       });
 
@@ -146,15 +144,15 @@ const MyRides = () => {
       className={`border rounded-lg p-4 mb-4 bg-white shadow flex flex-col md:flex-row md:items-center md:justify-between gap-2`}
     >
       <div className="flex-1">
-        <div className="flex flex-wrap gap-2 items-center mb-1">
-          <span className="font-semibold text-lg text-primary">
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <span className="text-lg font-semibold text-primary">
             {type.charAt(0).toUpperCase() + type.slice(1)}
           </span>
           <span className={`ml-2 px-2 py-1 rounded text-xs border ${statusColors[booking.status] || "text-gray-600 border-gray-300 bg-gray-50"}`}>
             {booking.status}
           </span>
         </div>
-        <div className="text-sm text-gray-700 mb-1">
+        <div className="mb-1 text-sm text-gray-700">
           <b>TrackingID:</b> <span className="font-mono">{booking.trackingNumber}</span>
         </div>
         {type === "ride" || type === "reservation" ? (
@@ -182,17 +180,17 @@ const MyRides = () => {
           </>
         )}
         {booking.note && (
-          <div className="text-xs text-gray-500 mt-1">Note: {booking.note}</div>
+          <div className="mt-1 text-xs text-gray-500">Note: {booking.note}</div>
         )}
       </div>
       <div className="flex flex-col gap-2 min-w-[120px] items-end">
         {booking.status !== "cancelled" && booking.status !== "completed" && (
           <>
 
-            {user && user.userRole === "user" && booking.status !== "in-transit" && booking.status !== "delivered"(
+            {user && user.userRole === "user" && booking.status !== "in-transit" && booking.status !== "delivered" && (
               <Button
                 text={actionLoading === booking.trackingNumber + type ? "Cancelling..." : "Cancel"}
-                className="bg-red-600 hover:bg-red-700 w-full"
+                className="w-full bg-red-600 hover:bg-red-700"
                 onClick={() => handleCancel(type, booking.trackingNumber)}
                 disabled={actionLoading === booking.trackingNumber + type}
               />
@@ -201,7 +199,7 @@ const MyRides = () => {
             {user && user.userRole === "drivingPartner" && booking.status !== "completed" && booking.status !== "delivered" && (
               <Button
                 text={actionLoading === booking.trackingNumber + type + "update" ? "Updating..." : "Update"}
-                className="bg-primary hover:bg-primary-dark w-full"
+                className="w-full bg-primary hover:bg-primary-dark"
                 onClick={() => setUpdateDialog({ open: true, type, trackingNumber: booking.trackingNumber, oldStatus: booking.status, newStatus: booking.status })}
                 disabled={actionLoading === booking.trackingNumber + type + "update"}
               />
@@ -223,11 +221,11 @@ const MyRides = () => {
   const UpdateStatusDialog = () => (
     updateDialog.open ? (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
-          <h3 className="text-xl font-bold text-primary mb-4">Update Booking Status</h3>
+        <div className="relative w-full max-w-sm p-6 bg-white rounded-lg shadow-lg">
+          <h3 className="mb-4 text-xl font-bold text-primary">Update Booking Status</h3>
           <label className="block mb-2 text-sm font-medium text-gray-700">Select new status:</label>
           <select
-            className="border rounded px-3 py-2 w-full mb-4"
+            className="w-full px-3 py-2 mb-4 border rounded"
             value={updateDialog.newStatus}
             onChange={e => setUpdateDialog(d => ({ ...d, newStatus: e.target.value }))}
             disabled={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update"}
@@ -238,7 +236,7 @@ const MyRides = () => {
             ))}
           </select>
           <div className="flex justify-end gap-2 mt-4">
-            <Button text="Cancel" className="bg-gray-300 text-gray-800 hover:bg-gray-400" onClick={() => setUpdateDialog({ open: false, type: '', trackingNumber: '', oldStatus: '', newStatus: '' })} disabled={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update"} />
+            <Button text="Cancel" className="text-gray-800 bg-gray-300 hover:bg-gray-400" onClick={() => setUpdateDialog({ open: false, type: '', trackingNumber: '', oldStatus: '', newStatus: '' })} disabled={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update"} />
             <Button text={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update" ? "Updating..." : "Update"} className="bg-primary hover:bg-primary-dark" onClick={handleUpdateStatus} disabled={actionLoading === updateDialog.trackingNumber + updateDialog.type + "update" || !updateDialog.newStatus || updateDialog.newStatus === updateDialog.oldStatus} />
           </div>
         </div>
@@ -249,9 +247,9 @@ const MyRides = () => {
   return (
     <>
       <Navbar />
-      <section className="min-h-screen bg-blue-50 py-8 px-2 md:px-0">
+      <section className="min-h-screen px-2 py-8 bg-blue-50 md:px-0">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold text-primary mb-6">My Rides & Bookings</h2>
+          <h2 className="mb-6 text-3xl font-bold text-primary">My Rides & Bookings</h2>
           {loading ? (
             <div className="text-center text-primary">Loading...</div>
           ) : error ? (
